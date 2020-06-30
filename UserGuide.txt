@@ -1,0 +1,64 @@
+To generate data for COOP computation from experimental/simulation images:
+1. Download "Codes for COOP PreProcessing" folder
+2. Run actinDetectMulti.m
+- When prompted, navigate the folder that contains all the images that you want to analyze and select all the images that you'd like to analyze
+- Enter the calibration factor (around 6.22 for each image, see Excel sheet "model image analysis info" for exact values)
+- Enter the image threshold (start around 0.15)
+- Resulting files for COOP analysis will be saved with the extension '_actinOrientation.mat'
+
+-------------------
+
+To generate COOP results from data files:
+1. In "Codes for COOP PreProcessing" folder, run COOP_MultiFOV_Shapes_2014_03_02_Squares.m
+- Enter the type of construct for analysis. For our purpsoses, we input "1" for Actin
+- Enter the second type of construct for analysis. For our purpsoses, we input "1" for Actin
+- Enter a length scale for analysis. The conversion is ~6 pixles per um. For our purpsoes, we chose S=6 (~1 um), S=18 (~3 um) or S=93 (~15 um)
+- When prompted, select the folder that contains all the data files that you want to analyze (the files with the '_actinOrientation.mat' extension)
+- When prompted, select the folder that contains all the data files that you want to analyze (the files with the '_actinOrientation.mat' extension)
+- When prompted, select all the data files that you'd like run the COOP on (the files with the '_actinOrientation.mat' extension)
+- COOP results files are saved with the extension 'ALLShapesCOOP.mat'. 
+Note: The COOP results files were renamed and sorted according to the type of cell analyzed
+The naming format used was "AspectRatio"_"CellType"_vs_"CellType"_"Scale"ALLShapesCOOP.mat
+For example: AR1_Exp_vs_Exp_S=6AllShapesCOOP corresponds to square cell shape (AR1), experiment versus experiment comparison, 1um scale (S=6)
+The results files were then sorted into folders according to the length scale and cell type comparisons used
+Each folder of results was also sorted according to the figure that was created using the results.
+For example: The "fig3-4 related results" folder contains folders of all results that are need to create figures 3 and 4 in the submitted paper
+
+-------------------
+
+To generate simulation results:
+1. Download "simulation codes" folder.
+2. For figure 2, run single_cell_units_linked_v3_NucPlacement.m. For figures 3 and 4, run single_cell_units_linked_v3_ARvaried.m 
+
+-------------------
+
+Codes used from Matlab File Exchange:
+arclength.m
+dijkstra.m
+inpoly.m
+intersections.m
+LineCurvature2D.m
+tspo_ga.m
+
+-------------------
+
+To create figures used in the submitted paper:
+1. To visualize the model-generated networks, need to go to the PostProcessing folder and select the appropriate code.
+First, be sure to load the parameter file and the model results file into Matlab and then execute the network visualization codes
+- For figure 2: postprocess_Network_pic_NucPlacement.m
+- For figure 4: postprocess_Network_pic_AR.m
+
+2. To create the other plots in the figures, consult the specific folder for each figure
+- Figure 2: 
+fig2_v2_COOP_viz_code.m creates the colored COOP circles
+fig2_v2_T_Nf_barPlots.m creates the bar plots of T and Nf
+
+- Figure 3:
+postprocess_Lc_AR.m creates curve length versus aspect ratio plot
+postprocess_NumFibers_AR.m creates number of fibers versus aspect ratio plot
+postprocess_T_AR.m creates traction stress magnitude versus aspect ratio
+
+- Figure 4: 
+COOP_colormaps_viz.m creates the colored COOP circles
+COOP_vs_AR_vize_code.m creates the COOP versus aspect ratio plot with multiple length scales
+COOP_vs_AR_singleS_viz_code.m creates the COOP versus aspect ratio plot for a single length scale
