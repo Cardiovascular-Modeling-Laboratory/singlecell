@@ -63,6 +63,7 @@ while ~isempty(pt_remove) && ncnts<=1000 && ~isempty(NF_altered)
         Lat2 = Lat(lat_sat_idx,:);
         V2_decomp=cell(1,1);
         pt_remove_store=[];
+        warning('There are not enough lattice points to construct a network. This is probably due to the lack of force vectors at the lattice points');
         return
     end
     lat_sat_idx(ismember(lat_sat_idx,pt_remove_store))=[];
