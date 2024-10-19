@@ -49,7 +49,7 @@ for m=1:nsim
     set(gca,'ytick',[])
     %title({['T= ',num2str(T_vec(m)),'; m= ',num2str(m)]})
     plot(scale_x,scale_y,'r','LineWidth',0.8) % 10um scale bar
-    xlim([-10 240].*10^(-6))
+    xlim([-10 50].*10^(-6))
     ylim([-10 50].*10^(-6))
     hold off;
     axis equal;

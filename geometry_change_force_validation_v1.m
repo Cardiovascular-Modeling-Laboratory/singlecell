@@ -32,30 +32,38 @@ function [F_t, F_adhesion, force_difference, force_ratio] = ...
     geometry_change_force_validation_v1(E, nu, stretch_factor, initial_area, L_0, ...
     F_store, time_index, dA, time)
 
+% Convert units where necessary
+initial_area = initial_area * 1e-12; % Convert from µm² to m²
+dA = dA * 1e-12;                     % Convert from µm² to m²
+
 % Calculate axial strain
 epsilon_axial = stretch_factor - 1;
 
 % Calculate transverse strain using Poisson's ratio
 epsilon_transverse = -nu * epsilon_axial;
 
-% Original cross-sectional area (perpendicular to stretch direction)
-% Assuming initial_area is the area before stretching
-% For uniaxial stretch along x-axis, the transverse area is in y-direction
-% Since we're in 2D, consider unit thickness in z-direction
+% Original cross-sectional width (perpendicular to stretch direction)
 A_0 = initial_area / L_0; % Initial width (m)
 
-% Update cross-sectional area
+disp(['initial_area: ', num2str(initial_area)]);disp(['L_0: ', num2str(L_0)]);disp(['A_0: ', num2str(A_0)]);disp(['stretch_factor: ', num2str(stretch_factor)]);disp(['epsilon_axial: ', num2str(epsilon_axial)]);disp(['epsilon_transverse: ', num2str(epsilon_transverse)]);
+% Update cross-sectional width
 A_t = A_0 * (1 + epsilon_transverse); % Updated width (m)
+disp(['A_t: ', num2str(A_t)]);
+% Assuming unit thickness in z-direction
+thickness = 1; % in meters
 
 % Calculate expected force from stress-strain relationship
-F_t = A_t * E * epsilon_axial; % Force in Newtons (N)
-
+F_t = E * epsilon_axial * A_t * thickness; % Force in Newtons (N)
+disp(['E: ', num2str(E), ' Pa']);disp(['epsilon_axial: ', num2str(epsilon_axial)]);disp(['A_t: ', num2str(A_t)]);disp(['thickness: ', num2str(thickness)]);disp(['F_t: ', num2str(F_t)]);
 % Extract adhesion force from simulation
-% Assuming stretch is along x-axis
 F_x = squeeze(F_store(time_index, :, 1)); % x-component of force at current time
-% Total adhesion force in x-direction
-F_adhesion = sum(F_x .* dA); % Sum over all points (N)
 
+% Total adhesion force in x-direction
+F_adhesion = max(F_x); % Sum over all points (N)
+disp(['max(F_x): ', num2str(max(F_x))]);
+disp(['max(F_adhesion): ', num2str(F_adhesion)]);
+F_adhesion = max(F_x); % Use the mean force as the adhesion force
+disp(['F_adhesion: ', num2str(F_adhesion)]);
 % Compare forces
 force_difference = F_adhesion - F_t;
 force_ratio = F_adhesion / F_t;
@@ -66,5 +74,4 @@ disp(['Expected Force F_t: ', num2str(F_t), ' N']);
 disp(['Adhesion Force F_adhesion: ', num2str(F_adhesion), ' N']);
 disp(['Force Difference: ', num2str(force_difference), ' N']);
 disp(['Force Ratio: ', num2str(force_ratio)]);
-
 end

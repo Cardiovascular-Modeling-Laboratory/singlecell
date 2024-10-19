@@ -4,7 +4,15 @@
 
 clear;
 
-max_stretch_factor = 5.0; % ストレッチの最大倍率
+% Define material properties (outside the loop)
+E = 1000; % Young's modulus in Pascals (Pa)
+Poisson_ratio = 0.5;  % Poisson's ratio
+% Define stretch schedule as a matrix [start_time, end_time, stretch_factor_start, stretch_factor_end]
+stretch_schedule = [
+    0,     24*3600, 1.0, 1.0;   % 0 h - 24 h: No stretch
+    24*3600, 48*3600, 1.0, 1.5; % 24 h - 48 h: Stretch from 1x to 5x
+    48*3600, 72*3600, 1.5, 1.0; % 48 h - 72 h: Shrink back to 1x
+    ];
 nsim=1; % max number of simulations
 choice=1; % designate the square
 nuc_decide_vec=[1 1 3 3]; % vector indicating if the nucleus should be placed in the center (1), randomly (2), or manually (3)
@@ -22,6 +30,8 @@ nuc_cx_store=zeros(numel(nuc_rel_vec),nsim);
 nuc_cy_store=zeros(numel(nuc_rel_vec),nsim);
 
 tic
+
+
 
 for my2=1:numel(nuc_rel_vec)
     disp(['nucleus placement number ',num2str(my2)])
@@ -125,6 +135,7 @@ for my2=1:numel(nuc_rel_vec)
         controlPoints=[]; network2=[]; combo_order=[]; Eb_network=[]; Time_matrix=[];Lc_network=[];Lat2=[];
         V2_decomp=[];pt_remove_store=[];NF_altered=[];lattice_sat_vals=[];
         
+        % Parameters for cell geometry modifications
         initial_area = dA * Npts_t;
         initial_dA = dA;
         A_initial = A;
@@ -134,16 +145,13 @@ for my2=1:numel(nuc_rel_vec)
         outline_initial = outline;
         nuc_cx_initial = nuc_cx;
         nuc_x_initial = nuc_x;
+        nuc_cy_initial = nuc_cy;
+        nuc_y_initial = nuc_y;
         % Initialize arrays to store results for later analysis
         F_t_store = zeros(time_points, 1);                % Expected force (N)
         F_adhesion_store = zeros(time_points, 1);         % Adhesion force from simulation (N)
         force_difference_store = zeros(time_points, 1);   % Difference between adhesion and expected force (N)
         force_ratio_store = zeros(time_points, 1);        % Ratio of adhesion force to expected force (dimensionless)
-
-        
-        % Define material properties (outside the loop)
-        E = 1000; % Young's modulus in Pascals (Pa)
-        Poisson_ratio = 0.5;  % Poisson's ratio
         
         % Calculate initial length L_0 (before the loop)
         x_positions = mat_r_initial(:,1);
@@ -154,20 +162,14 @@ for my2=1:numel(nuc_rel_vec)
             R_bound = R_factors_units_v2(rho_0,integrin_bound);
             
             % Simulate stretching of the cell
-            % ストレッチファクターを時間に応じて計算
-            stretch_factor = 1 + (max_stretch_factor - 1) * (time / t_max_u);
-            
+            % Get the stretch factor based on the schedule and current time
+            stretch_factor = get_stretch_factor(time, stretch_schedule);
+            disp(['Time: ', num2str(time), ' Stretch factor: ', num2str(stretch_factor)]);
             % Recalculate cell geometry
             % If loop number is > 1
             if time >= 0
-                % disp(['Stretching cell geometry', num2str(stretch_factor), ' at time ', num2str(time)])
-                % stretch_factor = 1.0;
-                % [mat_r,Npts_t,drx,dry,dA,dr_dist_squared, dist_to_line_sq, shape_name,dist_pair,drx_norm,dry_norm,Concave_ind,outline,nuc_x,nuc_y,nuc_cx,nuc_cy,choice, outside_segs, inside_segs,bdry_mat,bdry_pts,out_ind,Num_points,A,nuc_radius] = cell_geometry_strecth_v1(A_initial, stretch_factor, mat_r_initial, Npts_t,drx,dry,dA,dr_dist_squared, dist_to_line_sq, shape_name,dist_pair,drx_norm,dry_norm,Concave_ind,outline_initial,nuc_x_initial,nuc_y,nuc_cx_initial,nuc_cy,choice, outside_segs, inside_segs,bdry_mat,bdry_pts,out_ind,Num_points,A,nuc_radius);
-                % stretch_factor = 3.0;
-                % [mat_r,Npts_t,drx,dry,dA,dr_dist_squared, dist_to_line_sq, shape_name,dist_pair,drx_norm,dry_norm,Concave_ind,outline,nuc_x,nuc_y,nuc_cx,nuc_cy,choice, outside_segs, inside_segs,bdry_mat,bdry_pts,out_ind,Num_points,A,nuc_radius] = cell_geometry_strecth_v1(A_initial, stretch_factor, mat_r_initial, Npts_t,drx,dry,dA,dr_dist_squared, dist_to_line_sq, shape_name,dist_pair,drx_norm,dry_norm,Concave_ind,outline_initial,nuc_x_initial,nuc_y,nuc_cx_initial,nuc_cy,choice, outside_segs, inside_segs,bdry_mat,bdry_pts,out_ind,Num_points,A,nuc_radius);
                 
-                
-                [mat_r,Npts_t,drx,dry,dA,dr_dist_squared, dist_to_line_sq, shape_name,dist_pair,drx_norm,dry_norm,Concave_ind,outline,nuc_x,nuc_y,nuc_cx,nuc_cy,choice, outside_segs, inside_segs,bdry_mat,bdry_pts,out_ind,Num_points,A,nuc_radius] = cell_geometry_strecth_v1(A_initial, stretch_factor, mat_r_initial, Npts_t,drx,dry,dA,dr_dist_squared, dist_to_line_sq, shape_name,dist_pair,drx_norm,dry_norm,Concave_ind,outline_initial,nuc_x_initial,nuc_y,nuc_cx_initial,nuc_cy,choice, outside_segs, inside_segs,bdry_mat,bdry_pts,out_ind,Num_points,A,nuc_radius,Poisson_ratio);
+                [mat_r,Npts_t,drx,dry,dA,dr_dist_squared, dist_to_line_sq, shape_name,dist_pair,drx_norm,dry_norm,Concave_ind,outline,nuc_x,nuc_y,nuc_cx,nuc_cy,choice, outside_segs, inside_segs,bdry_mat,bdry_pts,out_ind,Num_points,A,nuc_radius] = cell_geometry_strecth_v1(A_initial, stretch_factor, mat_r_initial, Npts_t,drx,dry,dA,dr_dist_squared, dist_to_line_sq, shape_name,dist_pair,drx_norm,dry_norm,Concave_ind,outline_initial,nuc_x_initial,nuc_y_initial,nuc_cx_initial,nuc_cy_initial,choice, outside_segs, inside_segs,bdry_mat,bdry_pts,out_ind,Num_points,A,nuc_radius,Poisson_ratio);
                 tmp=size(outline);
                 if tmp(1)==2 && tmp(2)<50
                     boundary_pts=outline';
@@ -278,8 +280,8 @@ for my2=1:numel(nuc_rel_vec)
             F_adhesion_store(time_index) = F_adhesion;
             force_difference_store(time_index) = force_difference;
             force_ratio_store(time_index) = force_ratio;
-
-
+            
+            
             %next time step integrin cocentrations
             % Print the amount of integrin before and after the time step
             % disp(['**']);
@@ -380,7 +382,7 @@ for my2=1:numel(nuc_rel_vec)
         combo_res{my2,my1}=Combo_Order_t_store; %Combo_Order_t{end};
         nuc_cx_store(my2,my1)=nuc_cx;
         nuc_cy_store(my2,my1)=nuc_cy;
-
+        
         % For force validation
         F_t_res{my2,my1}=F_t_store;
         F_adhesion_res{my2,my1}=F_adhesion_store;
@@ -392,7 +394,7 @@ end
 %base_filename = file(1:(length(file)-4));
 % Add datetime_ms to the filename
 filename_save = ['paramTEST5_72hr_NucPlacement_fsatlim=18_net2_results_store_', datestr(now, 'yyyy-mm-dd_HH-MM-SS'), '.mat'];
-save(filename_save,'net_res','combo_res','F_res','fiber_id_res','mat_r','nuc_cx_store','nuc_cy_store','dA','outline','nuc_radius','nsim','F_t_res','F_adhesion_res','force_difference_res','force_ratio_res');
+save(filename_save,'net_res','combo_res','F_res','fiber_id_res','mat_r','nuc_cx_store','nuc_cy_store','dA','outline','nuc_radius','nsim','F_t_res','F_adhesion_res','force_difference_res','force_ratio_res','time_store','stretch_schedule');
 
 
 %Display the time it took to run the code in hours and minutes
@@ -400,3 +402,22 @@ elapsed_time_hrs = floor(toc/(60.*60.));
 elapsed_time_min = floor((toc - 60*60*elapsed_time_hrs)/60);
 elapsed_time_sec = toc - 60*elapsed_time_min- 60*60*elapsed_time_hrs;
 disp(['It took ' num2str(elapsed_time_hrs) ' hrs and ' num2str(elapsed_time_min) ' min to run the code']);
+
+
+% Function to compute stretch factor based on the current time and schedule
+function stretch_factor = get_stretch_factor(time, stretch_schedule)
+    for i = 1:size(stretch_schedule, 1)
+        start_time = stretch_schedule(i, 1);
+        end_time = stretch_schedule(i, 2);
+        factor_start = stretch_schedule(i, 3);
+        factor_end = stretch_schedule(i, 4);
+        
+        if time >= start_time && time <= end_time
+            % Linearly interpolate stretch factor within the time interval
+            stretch_factor = factor_start + (factor_end - factor_start) * ((time - start_time) / (end_time - start_time));
+            return;
+        end
+    end
+    % Default stretch factor if no match (e.g., outside the schedule)
+    stretch_factor = 1.0;
+end
