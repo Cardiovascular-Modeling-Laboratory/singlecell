@@ -8,11 +8,22 @@ clear;
 E = 1000; % Young's modulus in Pascals (Pa)
 Poisson_ratio = 0.5;  % Poisson's ratio
 % Define stretch schedule as a matrix [start_time, end_time, stretch_factor_start, stretch_factor_end]
+% Please make sure that the last time should be 72*3600+1 to avoid any errors
 stretch_schedule = [
-    0,     24*3600, 1.0, 1.0;   % 0 h - 24 h: No stretch
-    24*3600, 48*3600, 1.0, 1.5; % 24 h - 48 h: Stretch from 1x to 5x
-    48*3600, 72*3600, 1.5, 1.0; % 48 h - 72 h: Shrink back to 1x
-    ];
+    0, 24*3600, 1.0, 1.0;  % 0 h - 24 h: Stretch from 1.0 to 1.5
+    24*3600, 72*3601, 1.0, 1.5;  % 24 h - 48 h: Shrink from 1.5 to 1.0
+    % 48*3600, 72*3601, 1.5, 1.0;  % 48 h - 72 h: No stretch, remain at 1.0
+];
+% Define generation and degradation rates
+% Example starting values based on half-life estimates
+
+% Define generation and degradation rates
+% rho_bar = 400e+12;
+% G_f = 1e5;  % Example value for generation rate (units: integrin units per unit time)
+% D_f = 4.81e-10; % Example value for degradation rate of free integrin (units: 1/time)
+% D_b = 4.81e-10; % Example value for degradation rate of bound integrin (units: 1/time)
+
+
 nsim=1; % max number of simulations
 choice=1; % designate the square
 nuc_decide_vec=[1 1 3 3]; % vector indicating if the nucleus should be placed in the center (1), randomly (2), or manually (3)
@@ -286,7 +297,13 @@ for my2=1:numel(nuc_rel_vec)
             % Print the amount of integrin before and after the time step
             % disp(['**']);
             % disp(['Integrin free: ', num2str(sum(integrin_free)), ' Integrin bound: ', num2str(sum(integrin_bound)), ' rho_bar: ', num2str(rho_bar)]);
-            [integrin_free_new, integrin_bound_new]=New_integrin_cons_units_v2(integrin_free, integrin_bound,F, k_0,k_1,k_m1,time_step_u,rho_bar,Concave_ind,F_0);
+            % New integrin with dynamic generation and degradation
+            % [integrin_free_new, integrin_bound_new] = New_integrin_dynamic_cons_units_v1(...
+            %     integrin_free, integrin_bound, F, k_0, k_1, k_m1, time_step_u, ...
+            %     Concave_ind, F_0, G_f, D_f, D_b);
+            
+            % Old integrin with no generation and degradation
+            [integrin_free_new, integrin_bound_new]=New_integrin_cons_units_v2(integrin_free, integrin_bound,F, k_0,k_1,k_m1,time_step_u,rho_bar,Concave_ind,F_0);   
             % For now, we apply area_scale_factor to integrin concentrations
             % if area_scale_factor is defined (i.e. the cell shape has changed)
             if exist('area_scale_factor', 'var')
@@ -394,7 +411,7 @@ end
 %base_filename = file(1:(length(file)-4));
 % Add datetime_ms to the filename
 filename_save = ['paramTEST5_72hr_NucPlacement_fsatlim=18_net2_results_store_', datestr(now, 'yyyy-mm-dd_HH-MM-SS'), '.mat'];
-save(filename_save,'net_res','combo_res','F_res','fiber_id_res','mat_r','nuc_cx_store','nuc_cy_store','dA','outline','nuc_radius','nsim','F_t_res','F_adhesion_res','force_difference_res','force_ratio_res','time_store','stretch_schedule');
+save(filename_save,'net_res','combo_res','F_res','fiber_id_res','mat_r','nuc_cx_store','nuc_cy_store','dA','outline','nuc_radius','nsim','F_t_res','F_adhesion_res','force_difference_res','force_ratio_res','time_store','stretch_schedule', 'F_store', 'E', 'Poisson_ratio', 'initial_area', 'L_0');
 
 
 %Display the time it took to run the code in hours and minutes
