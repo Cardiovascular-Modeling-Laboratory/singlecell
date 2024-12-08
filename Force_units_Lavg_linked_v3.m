@@ -179,5 +179,9 @@ F_cyto=[F_cyto_x F_cyto_y];
 F_p=[F_p_x F_p_y];
 F_n=[F_n_x F_n_y];
 
+% Debug all the variables here
+disp('Debug and save all the variables here for force calculation');
+save('DEBUG_Force_units_Lavg_linked_v3.mat');
+
 end
 

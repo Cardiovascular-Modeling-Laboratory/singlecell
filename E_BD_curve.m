@@ -32,6 +32,11 @@ for si=1:numel(s)
     l1=[R1t1;R1t2];
     
     [Xi,Yi] = intersections(boundary_pts(:,1),boundary_pts(:,2),l1(:,1),l1(:,2));
+    if isempty(Xi) || isempty(Yi)
+        warning('No intersection found between l1 and boundary_pts at si = %d.', si);
+        cell_bdry_pt(si,:) = [NaN, NaN];
+        continue; % 次のループへ
+    end
     % note: due to the length of the line connecting R1t1 and R1t2, there
     % may be more than one intersection point with the cell boundary. the
     % intersection point that is closest to the point on the curve is the
@@ -40,6 +45,10 @@ for si=1:numel(s)
     [~,min_idx]=min(sqrt((curve_pts(:,1)-Xi(:,1)).^2+(curve_pts(:,2)-Yi(:,1)).^2));
     cell_bdry_pt(si,:)=[Xi(min_idx(1)), Yi(min_idx(1))];
 end
+
+% Remove rows with NaN values in cell_bdry_pt
+valid_idx = ~isnan(cell_bdry_pt(:,1)) & ~isnan(cell_bdry_pt(:,2));
+cell_bdry_pt = cell_bdry_pt(valid_idx, :);
 
 % construct coordinates of all points that represent the boundary of the
 % hanging region

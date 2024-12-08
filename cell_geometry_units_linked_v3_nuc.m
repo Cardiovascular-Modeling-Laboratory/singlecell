@@ -72,7 +72,7 @@
 %        13. outline - is the coordinates of line segments necessary to
 %        outline the shpae.
 
-function [mat_r,Npts_t,drx,dry,dA,dr_dist_squared, dist_to_line_sq, shape_name,dist_pair,drx_norm,dry_norm,Concave_ind,outline,nuc_x,nuc_y,nuc_cx,nuc_cy,choice, outside_segs, inside_segs,bdry_mat,bdry_pts,out_ind,Num_points,A,nuc_radius]=cell_geometry_units_linked_v3_nuc(Num_points,A,nuc_radius,choice,nuc_decide,nuc_cx_temp,nuc_cy_temp)
+function [mat_r,Npts_t,drx,dry,dA,dr_dist_squared, dist_to_line_sq, shape_name,dist_pair,drx_norm,dry_norm,Concave_ind,outline,nuc_x,nuc_y,nuc_cx,nuc_cy,choice, outside_segs, inside_segs,bdry_mat,bdry_pts,out_ind,Num_points,A,nuc_radius]=cell_geometry_units_linked_v3_nuc(Num_points,A,nuc_radius,choice,nuc_decide,nuc_cx_temp,nuc_cy_temp, max_stretch_factor)
 
 %Declare a variable Fig_Num to be global - this represents the figure
 %number, so that each set of figures generates in a different window.
@@ -103,7 +103,8 @@ end
 %Rectangular geometry
 if choice == 2
     %ask the user for the aspect ratio
-    aspect_ratio = input('Please specify the aspect ratio, i.e. x/y: ');
+    % aspect_ratio = input('Please specify the aspect ratio, i.e. x/y: ');
+    aspect_ratio = max_stretch_factor;
     l=sqrt(A*aspect_ratio);
     w=l/aspect_ratio;
     num_points_x = ceil(sqrt(aspect_ratio*Num_points)); %number of points in the x direction

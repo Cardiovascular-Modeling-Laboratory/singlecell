@@ -1,0 +1,7 @@
+archive/*
+Takashi/results/*
+
+.DS_Store
+
+DEBUG_*
+error_logs/*

@@ -157,7 +157,7 @@ while ~isempty(pt_remove) && ncnts<=1000 && ~isempty(NF_altered)
     % create storage for results
     network=cell(numbOfCombs,1); % cell array that will hold the r_x(t) and r_y(t) for each bundle
     E_bundle = cell(numbOfCombs,1); % total bundle bending energy for each pt-pt combo
-    controlPoints=cell(numbOfCombs,1);
+    controlPoints=cell(numbOfCombs,1); % cell array that will hold the control points for each bundle (control points are the points that define the curve)
     E_sys_tot = zeros(numbOfCombs,1);
 
     %disp(['time: ',num2str(time),'; There are ', num2str(numberOfPts), ' saturated lattice points and ', num2str(numbOfCombs),' potential point-point combinations'])
@@ -544,5 +544,9 @@ if ~isempty(E_sys_tot_plot)
 else
     E_sys_final=0;
 end
+
+% Debug all the variables here
+disp('Debug and save all the variables here for force calculation');
+save('DEBUG_fiber_model_linked2_v4.mat');
 
 end % end function
