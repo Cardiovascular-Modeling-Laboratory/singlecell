@@ -35,7 +35,7 @@ for si=1:numel(s)
     if isempty(Xi) || isempty(Yi)
         warning('No intersection found between l1 and boundary_pts at si = %d.', si);
         cell_bdry_pt(si,:) = [NaN, NaN];
-        continue; % 次のループへ
+        continue;
     end
     % note: due to the length of the line connecting R1t1 and R1t2, there
     % may be more than one intersection point with the cell boundary. the

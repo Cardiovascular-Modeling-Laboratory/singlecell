@@ -127,11 +127,11 @@ figure;
 % グラフ1: Mean Angle vs Stretch Factor
 subplot(1, 3, 1);
 bar(unique_stretch_factors, mean_angles_mean);
-hold on;
+hold on;lo
 errorbar(unique_stretch_factors, mean_angles_mean, mean_angles_sd, 'LineStyle', 'none', 'LineWidth', 2); % 太さを変更
 xlabel('Stretch Factor');
 ylabel('Mean Angle (degrees)');
-ylim([0, 90]); % 角度の範囲を 0-180 に設定
+ylim([0, 360]); % 角度の範囲を 0-180 に設定
 
 sig_positions = max(mean_angles_mean + mean_angles_sd) + 5;
 significant_pairs = c_angle(c_angle(:,6) < 0.05, 1:2); % p<0.05のペア
