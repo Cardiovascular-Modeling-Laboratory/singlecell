@@ -1,11 +1,11 @@
 function angle_deg = calculate_last_mean_angle_v3(net_res)
-    % OOP を計算する関数 (最終的に平均角度をスカラーで返す)
-    grid_size = 10; % グリッドの数
+    % Function to calculate OOP (returns the final mean angle as a scalar)
+    grid_size = 10; % Number of grids
     grid = zeros(grid_size, grid_size, 2); 
-    total_vectors = []; % 全繊維方向ベクトル
+    total_vectors = []; % All fiber direction vectors
 
     for sim_idx = 1:length(net_res)
-        net = net_res{1, sim_idx}{end}; % 最終ステップ
+        net = net_res{1, sim_idx}{end}; % Final step
         [grid_vectors, vectors] = collect_grid_vectors(net, grid_size);
         grid = grid + grid_vectors;
         total_vectors = [total_vectors, vectors];
@@ -64,16 +64,16 @@ function [grid_vectors, total_vectors] = collect_grid_vectors(net, grid_size)
                         if mid_point(1) >= x_start && mid_point(1) < x_end && ...
                            mid_point(2) >= y_start && mid_point(2) < y_end
                             vec = p2 - p1;
-                            vec = vec / norm(vec); % 正規化
+                            vec = vec / norm(vec); % Normalize
                             
-                            % 角度を0〜90度にマッピング
+                            % Map angle to 0-90 degrees
                             angle = atan2(vec(2), vec(1));
                             angle_deg = rad2deg(angle); % [-180,180)
                             if angle_deg < 0
                                 angle_deg = angle_deg + 180; % [0,180)
                             end
                             if angle_deg > 90
-                                angle_deg = 180 - angle_deg; % [0,90]に収める
+                                angle_deg = 180 - angle_deg; % Fit within [0,90]
                             end
                             
                             vec_new = [cosd(angle_deg); sind(angle_deg)];
@@ -89,7 +89,7 @@ function [grid_vectors, total_vectors] = collect_grid_vectors(net, grid_size)
                 avg_vec = mean(cell_vectors, 2);
                 avg_vec = avg_vec / norm(avg_vec);
 
-                % 念のためavg_vecも0〜90度へ統一（不要なら省略可能）
+                % Optionally unify avg_vec to 0-90 degrees (can be omitted if unnecessary)
                 angle_avg = atan2(avg_vec(2), avg_vec(1));
                 angle_avg_deg = rad2deg(angle_avg);
                 if angle_avg_deg < 0
@@ -123,7 +123,7 @@ function angle = calculate_angle_from_vectors(vectors)
         principal_vector = V(:, max_idx);
         angle = atan2(principal_vector(2), principal_vector(1));
         
-        % principal_vectorも0〜90度に収める
+        % Fit principal_vector within 0-90 degrees
         angle_deg = rad2deg(angle);
         if angle_deg < 0
             angle_deg = angle_deg + 180;
@@ -133,30 +133,30 @@ function angle = calculate_angle_from_vectors(vectors)
         end
         angle = deg2rad(angle_deg);
         
-        %% デバッグ用プロット %%
+        %% Debug plot %%
         figure; 
-        % 1. 全ベクトル分布の可視化
+        % 1. Visualize distribution of all vectors
         subplot(1,3,1);
         quiver(zeros(1,N), zeros(1,N), vectors(1,:), vectors(2,:), 0, 'b');
         hold on;
-        % 主方向ベクトルを赤色でプロット
+        % Plot principal direction vector in red
         quiver(0,0,cosd(angle_deg), sind(angle_deg),0,'r','LineWidth',2);
         axis equal; grid on;
         title('All fiber direction vectors (0-90 deg)');
         xlabel('X'); ylabel('Y');
         
-        % 2. 角度分布のpolarヒストグラム
+        % 2. Polar histogram of angle distribution
         subplot(1,3,2);
         all_angles = atan2(vectors(2,:), vectors(1,:));
         all_angles_deg = rad2deg(all_angles);
-        % 正規化(0〜90度)
+        % Normalize to 0-90 degrees
         all_angles_deg(all_angles_deg<0) = all_angles_deg(all_angles_deg<0) + 180;
         mask = all_angles_deg > 90;
         all_angles_deg(mask) = 180 - all_angles_deg(mask);
         polarhistogram(deg2rad(all_angles_deg), 18);
         title('Angle distribution of fibers (0-90 deg)');
         
-        % 3. T_meanテンソルの楕円可視化
+        % 3. Visualize T_mean tensor ellipse
         subplot(1,3,3);
         [V_plot, D_plot] = eig(T_mean);
         th = linspace(0,2*pi,100);

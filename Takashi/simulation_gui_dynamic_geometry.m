@@ -1,4 +1,3 @@
-% filepath: /Users/inagakit/Documents/UCIrvine/AnnaGrosberg/singlecell/simulation_gui.m
 function simulation_gui_dynamic_geometry()
     % Create the GUI figure
     figWidth = 800;

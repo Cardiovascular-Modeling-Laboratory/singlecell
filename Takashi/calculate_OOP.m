@@ -1,27 +1,27 @@
 function OOP = calculate_OOP(net_res)
-    % OOP を計算する関数
-    % net_res: シミュレーション結果の繊維データ
-    % OOP: Orientation Order Parameter (スカラー値)
+    % Function to calculate OOP
+    % net_res: Fiber data from simulation results
+    % OOP: Orientation Order Parameter (scalar value)
 
-    grid_size = 10; % グリッドの数
-    grid = zeros(grid_size, grid_size, 2); % 平均方向ベクトルを格納
-    total_vectors = []; % 全繊維方向ベクトル
+    grid_size = 10; % Number of grids
+    grid = zeros(grid_size, grid_size, 2); % Store average direction vectors
+    total_vectors = []; % All fiber direction vectors
 
     for sim_idx = 1:length(net_res)
-        net = net_res{1, sim_idx}{end}; % 最終ステップ
-        % グリッドごとにベクトルを収集
+        net = net_res{1, sim_idx}{end}; % Final step
+        % Collect vectors for each grid
         [grid_vectors, vectors] = collect_grid_vectors(net, grid_size);
         grid = grid + grid_vectors;
         total_vectors = [total_vectors, vectors];
     end
 
-    % OOPの計算
+    % Calculate OOP
     OOP = calculate_OOP_from_vectors(total_vectors);
 end
 
-%% 関数: グリッドごとの繊維方向ベクトルを収集
+%% Function: Collect fiber direction vectors for each grid
 function [grid_vectors, total_vectors] = collect_grid_vectors(net, grid_size)
-    % グリッドエッジの初期化
+    % Initialize grid edges
     all_x = [];
     all_y = [];
     for j = 1:length(net)
@@ -29,11 +29,11 @@ function [grid_vectors, total_vectors] = collect_grid_vectors(net, grid_size)
         if isempty(net_temp)
             continue;
         end
-        % 繊維データが3次元配列の場合を考慮
+        % Consider the case where fiber data is a 3D array
         if size(net_temp, 1) >= 2
             x_coords = net_temp(1, :, :);
             y_coords = net_temp(2, :, :);
-            % 2次元配列に変換（多次元配列をベクトルに整形）
+            % Convert to 2D array (reshape multidimensional array to vector)
             x_coords = x_coords(:);
             y_coords = y_coords(:);
             all_x = [all_x; x_coords];
@@ -43,23 +43,23 @@ function [grid_vectors, total_vectors] = collect_grid_vectors(net, grid_size)
         end
     end
 
-    % グリッドエッジを定義
+    % Define grid edges
     x_min = min(all_x); x_max = max(all_x);
     y_min = min(all_y); y_max = max(all_y);
     x_edges = linspace(x_min, x_max, grid_size+1);
     y_edges = linspace(y_min, y_max, grid_size+1);
 
-    % グリッドごとのベクトル収集
-    grid_vectors = zeros(grid_size, grid_size, 2); % 平均ベクトル格納
+    % Collect vectors for each grid
+    grid_vectors = zeros(grid_size, grid_size, 2); % Store average vectors
     total_vectors = [];
     
     for xi = 1:grid_size
         for yi = 1:grid_size
-            % グリッドセルの範囲
+            % Range of grid cell
             x_start = x_edges(xi); x_end = x_edges(xi+1);
             y_start = y_edges(yi); y_end = y_edges(yi+1);
             
-            % グリッドセル内のベクトル
+            % Vectors within the grid cell
             cell_vectors = [];
             
             for j = 1:length(net)
@@ -69,18 +69,18 @@ function [grid_vectors, total_vectors] = collect_grid_vectors(net, grid_size)
                 end
                 
                 for idx = 1:size(net_temp, 2)-1
-                    % 繊維の始点と終点
+                    % Start and end points of the fiber
                     if size(net_temp, 1) >= 2
                         p1 = net_temp(:, idx);
                         p2 = net_temp(:, idx+1);
                         mid_point = (p1 + p2) / 2;
 
-                        % 中点がグリッド内にあるか判定
+                        % Determine if the midpoint is within the grid
                         if mid_point(1) >= x_start && mid_point(1) < x_end && ...
                            mid_point(2) >= y_start && mid_point(2) < y_end
-                            % ベクトルを計算
+                            % Calculate vector
                             vec = p2 - p1;
-                            vec = vec / norm(vec); % 正規化
+                            vec = vec / norm(vec); % Normalize
                             cell_vectors = [cell_vectors, vec];
                         end
                     else
@@ -89,7 +89,7 @@ function [grid_vectors, total_vectors] = collect_grid_vectors(net, grid_size)
                 end
             end
             
-            % グリッド平均ベクトルを計算
+            % Calculate average vector for the grid
             if ~isempty(cell_vectors)
                 avg_vec = mean(cell_vectors, 2);
                 avg_vec = avg_vec / norm(avg_vec);
@@ -100,7 +100,7 @@ function [grid_vectors, total_vectors] = collect_grid_vectors(net, grid_size)
     end
 end
 
-%% 関数: OOPを計算
+%% Function: Calculate OOP
 function OOP = calculate_OOP_from_vectors(vectors)
     N = size(vectors, 2);
     if N > 0

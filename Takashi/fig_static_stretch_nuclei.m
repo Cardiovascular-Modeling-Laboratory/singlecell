@@ -1,24 +1,23 @@
-% filepath: /Users/inagakit/Documents/UCIrvine/AnnaGrosberg/singlecell/Takashi/fig9_v2.m
-% 必要なデータをプロットするためのスクリプト
+% Script to plot necessary data
 
-% ディレクトリ内の .mat ファイルを取得（n=3 の結果を含むファイルパターンに変更）
+% Get .mat files in the directory (change file pattern to include results with n=3)
 dataDir = pwd;
 filePattern = fullfile(dataDir, 'Takashi', 'results', 'fig9_v2_n=*_final*.mat');
 resultFiles = dir(filePattern);
 
-% 保存用変数（データを蓄積するために変更）
+% Variables for saving data (changed to accumulate data)
 final_values = [];
 mean_angles_all = [];
 OOP_values_all = [];
 traction_forces_all = [];
 nucleus_obstruction_all = [];
 
-% データを収集
+% Collect data
 for k = 1:length(resultFiles)
     filename = fullfile(resultFiles(k).folder, resultFiles(k).name);
     disp(['Processing file: ', filename]);
 
-    % ファイル名から n、final_value、nucleus_obstruction を抽出
+    % Extract n, final_value, and nucleus_obstruction from the filename
     tokens = regexp(resultFiles(k).name, 'fig9_v2_n=(\d+)_final(\d+)_nuc_rel_vec_(\d+)', 'tokens');
     if ~isempty(tokens)
         n_sim = str2double(tokens{1}{1});
@@ -26,19 +25,19 @@ for k = 1:length(resultFiles)
         nuc_obstruction = str2double(tokens{1}{3});
     else
         disp(['Could not parse n, final value, or nucleus obstruction from filename: ', resultFiles(k).name]);
-        continue; % 次のファイルへ
+        continue; % Move to the next file
     end
 
-    % データ読み込み
-    load(filename, 'net_res', 'F_res', 'F_store');  % 必要なデータを読み込む
+    % Load data
+    load(filename, 'net_res', 'F_res', 'F_store');  % Load necessary data
 
-    % ---- 必要なデータを計算・保存する ----
-    % 複数のシミュレーション結果から平均角度や OOP を計算
-    mean_angles = calculate_last_mean_angle(net_res);      % サイズ: [n_sim x 1]
-    OOP_values = calculate_OOP(net_res);                   % サイズ: [n_sim x 1]
-    traction_forces = calculate_last_traction_force(F_store); % サイズ: [n_sim x 1]
+    % ---- Calculate and save necessary data ----
+    % Calculate mean angle and OOP from multiple simulation results
+    mean_angles = calculate_last_mean_angle(net_res);      % Size: [n_sim x 1]
+    OOP_values = calculate_OOP(net_res);                   % Size: [n_sim x 1]
+    traction_forces = calculate_last_traction_force(F_store); % Size: [n_sim x 1]
 
-    % 結果を保存
+    % Save results
     final_values = [final_values; final_value];
     mean_angles_all = [mean_angles_all; mean_angles];
     OOP_values_all = [OOP_values_all; OOP_values];
@@ -46,21 +45,21 @@ for k = 1:length(resultFiles)
     nucleus_obstruction_all = [nucleus_obstruction_all; nuc_obstruction];
 end
 
-% データをソート
+% Sort data
 [sorted_final_values, sort_idx] = sort(final_values);
 sorted_mean_angles = mean_angles_all(sort_idx);
 sorted_OOP_values = OOP_values_all(sort_idx);
 sorted_traction_forces = traction_forces_all(sort_idx);
 sorted_nucleus_obstruction = nucleus_obstruction_all(sort_idx);
 
-% 核の障害の有無ごとにデータを分割
+% Split data by presence or absence of nucleus obstruction
 no_obstruction_idx = sorted_nucleus_obstruction == 0;
 with_obstruction_idx = sorted_nucleus_obstruction == 1;
 
-% ユニークなファイナル値を取得
+% Get unique final values
 unique_final_values = unique(sorted_final_values);
 
-% 各ファイナル値ごとにデータを分け、核の有無で平均と標準偏差を計算
+% Split data by each final value and calculate mean and standard deviation for presence or absence of nucleus
 mean_angles_mean_no = zeros(length(unique_final_values),1);
 mean_angles_sd_no = zeros(length(unique_final_values),1);
 mean_angles_mean_with = zeros(length(unique_final_values),1);
@@ -96,17 +95,17 @@ for i = 1:length(unique_final_values)
     traction_forces_sd_with(i) = std(sorted_traction_forces(idx_with));
 end
 
-% x軸の位置を調整
+% Adjust x-axis positions
 x_no_obstruction = unique_final_values;
 x_with_obstruction = unique_final_values + 0.35;
 
-% デバッグ用のフラグ
+% Debug flag
 debug_show_asterisks = true;
 
-% ---- グラフをプロット ----
+% ---- Plot graphs ----
 figure;
 
-% グラフ1: Mean Angle vs Final Value
+% Graph 1: Mean Angle vs Final Value
 subplot(1, 3, 1);
 hold on;
 bar1 = bar(x_no_obstruction, mean_angles_mean_no, 'FaceColor', 'b', 'BarWidth', 0.3);
@@ -115,11 +114,11 @@ bar2 = bar(x_with_obstruction, mean_angles_mean_with, 'FaceColor', 'r', 'BarWidt
 errorbar(x_with_obstruction, mean_angles_mean_with, mean_angles_sd_with, '.', 'Color', 'k');
 xlabel('Final Value');
 ylabel('Mean Angle (degrees)');
-ylim([0, 90]); % 角度の範囲を 0-90 に設定
+ylim([0, 90]); % Set angle range to 0-90
 legend([bar1, bar2], {'No Obstruction', 'With Obstruction'});
 title('Mean Angle');
 
-% ANOVAの結果に基づいて有意差を表示
+% Display significance based on ANOVA results
 sig_positions = max([mean_angles_mean_no + mean_angles_sd_no, mean_angles_mean_with + mean_angles_sd_with], [], 2) + 5;
 for i = 1:length(unique_final_values)
     idx_no = sorted_final_values == unique_final_values(i) & sorted_nucleus_obstruction == 0;
@@ -131,7 +130,7 @@ for i = 1:length(unique_final_values)
     end
 end
 
-% グラフ2: OOP vs Final Value
+% Graph 2: OOP vs Final Value
 subplot(1, 3, 2);
 hold on;
 bar1 = bar(x_no_obstruction, OOP_values_mean_no, 'FaceColor', 'b', 'BarWidth', 0.3);
@@ -140,11 +139,11 @@ bar2 = bar(x_with_obstruction, OOP_values_mean_with, 'FaceColor', 'r', 'BarWidth
 errorbar(x_with_obstruction, OOP_values_mean_with, OOP_values_sd_with, '.', 'Color', 'k');
 xlabel('Final Value');
 ylabel('OOP');
-ylim([0, 1]); % OOPの範囲を 0-1 に設定
+ylim([0, 1]); % Set OOP range to 0-1
 legend([bar1, bar2], {'No Obstruction', 'With Obstruction'});
 title('OOP');
 
-% ANOVAの結果に基づいて有意差を表示
+% Display significance based on ANOVA results
 sig_positions = max([OOP_values_mean_no + OOP_values_sd_no, OOP_values_mean_with + OOP_values_sd_with], [], 2) + 0.05;
 for i = 1:length(unique_final_values)
     idx_no = sorted_final_values == unique_final_values(i) & sorted_nucleus_obstruction == 0;
@@ -156,7 +155,7 @@ for i = 1:length(unique_final_values)
     end
 end
 
-% グラフ3: Traction Force vs Final Value
+% Graph 3: Traction Force vs Final Value
 subplot(1, 3, 3);
 hold on;
 bar1 = bar(x_no_obstruction, traction_forces_mean_no, 'FaceColor', 'b', 'BarWidth', 0.3);
@@ -168,7 +167,7 @@ ylabel('Traction Force (N)');
 legend([bar1, bar2], {'No Obstruction', 'With Obstruction'});
 title('Traction Force');
 
-% ANOVAの結果に基づいて有意差を表示
+% Display significance based on ANOVA results
 sig_positions = max([traction_forces_mean_no + traction_forces_sd_no, traction_forces_mean_with + traction_forces_sd_with], [], 2) + 0.05;
 for i = 1:length(unique_final_values)
     idx_no = sorted_final_values == unique_final_values(i) & sorted_nucleus_obstruction == 0;
@@ -180,23 +179,23 @@ for i = 1:length(unique_final_values)
     end
 end
 
-% 全体のレイアウト調整
+% Adjust overall layout
 sgtitle('Stretch Results Analysis with and without Nucleus Obstruction');
 
-% ---- ANOVAによる統計検定 ----
-% 二元配置分散分析を実施
+% ---- Statistical test by ANOVA ----
+% Perform two-way ANOVA
 group = {sorted_final_values, sorted_nucleus_obstruction};
 
-% Mean Angleに対するANOVA
+% ANOVA for Mean Angle
 [p_angle, tbl_angle, stats_angle] = anovan(sorted_mean_angles, group, 'model', 'interaction', 'varnames', {'FinalValue', 'NucleusObstruction'});
 
-% OOPに対するANOVA
+% ANOVA for OOP
 [p_OOP, tbl_OOP, stats_OOP] = anovan(sorted_OOP_values, group, 'model', 'interaction', 'varnames', {'FinalValue', 'NucleusObstruction'});
 
-% Traction Forceに対するANOVA
+% ANOVA for Traction Force
 [p_traction, tbl_traction, stats_traction] = anovan(sorted_traction_forces, group, 'model', 'interaction', 'varnames', {'FinalValue', 'NucleusObstruction'});
 
-% 結果を表示
+% Display results
 disp('ANOVA for Mean Angles:');
 disp(tbl_angle);
 disp(['p-values: ', num2str(p_angle')]);
