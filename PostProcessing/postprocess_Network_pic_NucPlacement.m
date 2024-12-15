@@ -4,11 +4,12 @@
 % j2=1 : no nucleus; j2=2: nuc in center; j2=3: nuc left of center; j2=4:
 % nuc above center
 t=linspace(0,1);
-j2=1;
+j2=4;
 scale_x=linspace(0,1).*10^(-5);
 scale_y=ones(size(scale_x)).*(4.9e-5);
 
-for m=1:nsim
+for m=1:nsim %m3=1:numel(n1)
+%    m=n1(m3);%m2(m3);
     nuc_cx=nuc_cx_store(j2,m);
     nuc_cy=nuc_cy_store(j2,m);
     % nucleus curve
@@ -36,7 +37,7 @@ for m=1:nsim
     tmp = size(outline);
     hold on;
     if tmp(1) ==1 %if circle; circle behaves weird with "patch" so make nucleus a filled circle
-        rectangle('Position',[outline(1)-outline(3),outline(2)-outline(3),2*outline(3),2*outline(3)],'Curvature',[1,1]);
+        rectangle('Position',[outline(1)-outline(3),outline(2)-outline(3),2*outline(3),2*outline(3)],'Curvature',[1,1]);%,...
         rectangle('Position',[nuc_cx-nuc_radius,nuc_cy-nuc_radius,2*nuc_radius,2*nuc_radius],'Curvature',[1,1],'FaceColor','b');% this line plots the nucleus as a filled blue circle
     else
          line(outline(1,:),outline(2,:),'Color',[0 0 0],'LineWidth',2);
@@ -44,18 +45,17 @@ for m=1:nsim
          plot(nuc_x,nuc_y,'b','LineWidth',1.5);
     end
     hold on
-    plot(10^(-6).*actin_x',10^(-6).*actin_y','k','LineWidth',0.5)
-    set(gca,'xtick',[])
-    set(gca,'ytick',[])
-    %title({['T= ',num2str(T_vec(m)),'; m= ',num2str(m)]})
-    plot(scale_x,scale_y,'r','LineWidth',0.8) % 10um scale bar
-    xlim([-10 50].*10^(-6))
-    ylim([-10 50].*10^(-6))
-    hold off;
+        plot(10^(-6).*actin_x',10^(-6).*actin_y','k','LineWidth',1.5)
+%        plot(10^(-6).*actin_x',10^(-6).*actin_y','k')
+        set(gca,'xtick',[])
+        set(gca,'ytick',[])
+        %title({['T= ',num2str(T_vec(m)),'; m= ',num2str(m)]})
+        plot(scale_x,scale_y,'r','LineWidth',2) % 10um scale bar
+    xlim([0 50].*10^(-6))
+    ylim([0 50].*10^(-6))
+        hold off;
     axis equal;
     set(gca,'Units','centimeters','OuterPosition',[5,5,6,6],'Position',[3,1,9.5,9.5]);
-    
-    % Save the figure with a dynamic name based on the simulation number
-    filename = ['FiberNetworkPlot_5A_m', num2str(m), '.tif'];
-    saveas(gcf, filename); % Save the figure as PNG
+    hold off
+    %axis square
 end
