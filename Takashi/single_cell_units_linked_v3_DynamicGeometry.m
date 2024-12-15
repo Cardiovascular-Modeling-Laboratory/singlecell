@@ -15,15 +15,14 @@ Poisson_ratio = 0.5;  % Poisson's ratio
 % video_filename = fullfile(folder_path, video_filename);
 % filename_save = fullfile(folder_path, filename_save);
 
-% パラメータからファイル名を取得
+% EN: Get the filename from the parameters
 filename_save = params.filename_save;
 video_filename = params.videoname_save;
-% 日時情報を追加（必要に応じて）
+% EN: Add date and time information (if necessary)
 date_time = datestr(now, 'yyyy-mm-dd_HH-MM-SS');
 filename_save = strrep(filename_save, '.mat', ['_', date_time, '.mat']);
 video_filename = strrep(video_filename, '.mp4', ['_', date_time, '.mp4']);
-% ...existing code...
-% ファイルパスを設定
+% EN: Set the file path
 folder_path = fullfile(pwd, 'Takashi', 'results');
 video_filename = fullfile(folder_path, video_filename);
 filename_save = fullfile(folder_path, filename_save);
@@ -219,23 +218,23 @@ for my2=1:numel(nuc_rel_vec)
         x_positions = mat_r_initial(:,1);
         L_0 = (max(x_positions) - min(x_positions)) * 1e-6; % Convert to meters if necessary
         
-        % 動画のファイル名と形式を指定
+        % EN: Create a VideoWriter object for the video file
         v = VideoWriter(video_filename, 'MPEG-4');
         current_network2 = [];
-        % フレームレートを設定（例：30fps）
+        % EN: Set the frame rate to 30 fps
         v.FrameRate = 30;
-        % マイクロメートル単位に変換
+        % EN: Convert to micrometers
 
-        % mat_targetをmax_stretch_factor倍にする
+        % EN: Multiply mat_target by max_stretch_factor
         mat_r_target = mat_r_initial * max_stretch_factor;
         mat_r_initial_micro = mat_r_initial * 1e6;
         mat_r_target_micro = mat_r_target * 1e6;
-        % 軸の範囲を設定
-        x_min = min([mat_r_initial_micro(:,1); mat_r_target_micro(:,1)]) - 10; % 余裕を持たせる
+        % EN: Get the minimum and maximum x and y values
+        x_min = min([mat_r_initial_micro(:,1); mat_r_target_micro(:,1)]) - 10;
         x_max = max([mat_r_initial_micro(:,1); mat_r_target_micro(:,1)]) + 10;
         y_min = min([mat_r_initial_micro(:,2); mat_r_target_micro(:,2)]) - 10;
         % y_max = 60; %max([mat_r_initial_micro(:,2); mat_r_target_micro(:,2)]) - 5;
-        % 動画ファイルを開く
+        % EN: Open the video file
         open(v);
 
         % Debug save all the variables before the loop
@@ -262,14 +261,13 @@ for my2=1:numel(nuc_rel_vec)
                     % for circle, oval
                     boundary_pts=bdry_pts;
                 end
-                % TODO: Outlineの動作確認
                 if size(outline, 2) == 2
                     outline = outline';
                 end
                 
-                % プロットの作成（セルの状態とファイバーネットワークを描画）
+                % EN: Convert mat_r to micrometers
                 if mod(time_index, 10) == 0
-                    % セルの座標をマイクロメートル単位に変換
+                    % Convert cell coordinates to micrometers
                     mat_r_micro = mat_r * 1e6;
                     outline_micro = outline * 1e6;
                     nuc_x_micro = nuc_x * 1e6;
@@ -278,50 +276,32 @@ for my2=1:numel(nuc_rel_vec)
                     nuc_cy_micro = nuc_cy * 1e6;
                     boundary_pts_micro = boundary_pts * 1e6;
                     
-                    figure(10); % 図の番号を指定
-                    clf; % 現在の図をクリア
-                    
-                    % セルの格子点をプロット
+                    figure(10); 
+                    clf; 
                     plot(mat_r_micro(:,1), mat_r_micro(:,2), 'b.');
                     hold on;
-                    
-                    % セルのアウトラインをプロット
-                    % plot(outline_micro(:,1), outline_micro(:,2), 'r-');
                     plot(boundary_pts_micro(:,1), boundary_pts_micro(:,2), 'r*');
-                    
-                    % 核の位置をプロット
                     plot(nuc_x_micro, nuc_y_micro, 'g*');
                     plot(nuc_cx_micro, nuc_cy_micro, 'k*');
-                    
-                    % ファイバーネットワークをプロット
-                    % ファイバーネットワークをプロット
                     if ~isempty(current_network2)
-                        % current_network2 の各エントリに対してループ
                         for i = 1:length(current_network2)
                             rt2 = current_network2{i};
-                            
-                            % rt2 が空でないことを確認
                             if isempty(rt2)
-                                continue; % 空の場合は次のループへ
+                                continue;
                             end
                             
-                            % rt2 のサイズを取得
                             sz = size(rt2);
                             
-                            % rt2 が少なくとも2次元であることを確認
                             if numel(sz) < 2
                                 warning('rt2 at index %d has less than 2 dimensions.', i);
                                 continue;
                             end
                             
-                            % rt2 の次元数に応じて処理を分ける
                             if numel(sz) == 2
-                                % 2次元配列の場合（単一のファイバー）
                                 x_coords = rt2(1,:);
                                 y_coords = rt2(2,:);
                                 plot(x_coords, y_coords, 'k-', 'LineWidth', 1);
                             elseif numel(sz) == 3
-                                % 3次元配列の場合（複数のファイバー）
                                 n_fibers = sz(3);
                                 for j = 1:n_fibers
                                     x_coords = rt2(1,:,j);
@@ -335,8 +315,6 @@ for my2=1:numel(nuc_rel_vec)
                         end
                     end
                     
-                    
-                    % 軸の設定
                     axis equal;
                     xlim([x_min, x_max]);
                     y_max = get_y_max(time, stretch_schedule);
@@ -344,12 +322,8 @@ for my2=1:numel(nuc_rel_vec)
                     title(['Cell Geometry and Fiber Network at Time ', num2str(time), ' s']);
                     xlabel('X Coordinate');
                     ylabel('Y Coordinate');
-                    % legend('Cell Points', 'Outline', 'Nucleus', 'Nucleus Center', 'Fiber Network');
                     
-                    % 現在のフレームを取得
                     frame = getframe(gcf);
-                    
-                    % フレームを動画に追加
                     writeVideo(v, frame);
                     
                     hold off;
@@ -361,24 +335,6 @@ for my2=1:numel(nuc_rel_vec)
                 [L_0_rel, d_rel, EA] = bdry_tension2(dist_pair, outside_segs, mat_r, outline);
                 Lambda_e = T_L .* L_0_rel + EA .* (d_rel - L_0_rel) ./ L_0_rel;
                 Lambda_e(isnan(Lambda_e)) = 0;
-                
-                % インテグリン濃度の調整
-                disp(['Adjusting integrin concentration for cell geometry stretching at time ', num2str(time)]);
-                disp(['Stretch factor: ', num2str(stretch_factor)]);
-                % disp([ 'Integrin free: ', num2str(sum(integrin_free)), ' Integrin bound: ', num2str(sum(integrin_bound))]);
-                % disp(['dA = ', num2str(dA), ' Npts_t = ', num2str(Npts_t)]);
-                area_new = dA * Npts_t;
-                area_scale_factor = initial_area / area_new;
-                % integrin_free = integrin_free * area_scale_factor;
-                % integrin_bound = integrin_bound * area_scale_factor;
-                % disp(['area_new = ', num2str(area_new), ' initial_area = ', num2str(initial_area)]);
-                % disp(['Area scale factor: ', num2str(area_scale_factor)]);
-                % disp([ 'Integrin free: ', num2str(sum(integrin_free)), ' Integrin bound: ', num2str(sum(integrin_bound))]);
-                % disp(['dA*sum(integrin_free_new+integrin_bound_new) =', num2str(dA*sum(integrin_free+integrin_bound))]);
-                
-                % 次のイテレーションのために古い値を更新
-                dA_old = dA;
-                Npts_t_old = Npts_t;
             end
             
             % Check if the cell geometry is correctly updated
@@ -399,15 +355,7 @@ for my2=1:numel(nuc_rel_vec)
             
             % Check if actin_network is populated
             disp(['Time: ', num2str(time), ' Actin network size: ', num2str(size(network2))]);
-            % disp(['Actin network: ']);
-            % network2
-            % disp(['Esys']);
-            % E_sys_final
-            % disp(['Control points']);
-            % controlPoints
-            % disp(['Combo order']);
-            % combo_order
-            
+
             % Store relevant info at this time point
             sat_lat_idx_t{time_index+1} = lat_sat_idx; % record lattice points that are currently saturated at this time point
             Esys_t(time_index+1) = E_sys_final; % record final Esystem value
@@ -462,25 +410,7 @@ for my2=1:numel(nuc_rel_vec)
             force_ratio_store(time_index) = force_ratio;
             
             
-            %next time step integrin cocentrations
-            % Print the amount of integrin before and after the time step
-            % disp(['**']);
-            % disp(['Integrin free: ', num2str(sum(integrin_free)), ' Integrin bound: ', num2str(sum(integrin_bound)), ' rho_bar: ', num2str(rho_bar)]);
-            % New integrin with dynamic generation and degradation
-            % [integrin_free_new, integrin_bound_new] = New_integrin_dynamic_cons_units_v1(...
-            %     integrin_free, integrin_bound, F, k_0, k_1, k_m1, time_step_u, ...
-            %     Concave_ind, F_0, G_f, D_f, D_b);
-            
-            % Old integrin with no generation and degradation
             [integrin_free_new, integrin_bound_new]=New_integrin_cons_units_v2(integrin_free, integrin_bound,F, k_0,k_1,k_m1,time_step_u,rho_bar,Concave_ind,F_0);   
-            % For now, we apply area_scale_factor to integrin concentrations
-            % if area_scale_factor is defined (i.e. the cell shape has changed)
-            if exist('area_scale_factor', 'var')
-                % integrin_free_new=integrin_free_new * area_scale_factor;
-                % integrin_bound_new=integrin_bound_new * area_scale_factor;
-            end
-            % disp(['Integrin free new: ', num2str(sum(integrin_free_new)), ' Integrin bound new: ', num2str(sum(integrin_bound_new)), ' rho_bar: ', num2str(rho_bar)]);
-            % disp(['**']);
             
             % code error checkpoint
             if max(isnan(integrin_free_new)) >0
@@ -504,17 +434,6 @@ for my2=1:numel(nuc_rel_vec)
             %If the time step is chosen to be too large, it is possible to loose
             %mass consrvation. The following is set up to stop the simulation is
             %that is the case
-            % TODO: Modify this to allow cell geometry streching
-            disp(['integrin_free: ', num2str(sum(integrin_free)), ' integrin_bound: ', num2str(sum(integrin_bound))]);
-            disp(['integrin_free_new+: ', num2str(sum(integrin_free_new)), ' integrin_bound_new+: ', num2str(sum(integrin_bound_new))]);
-            disp(['integrin_free + integrin_bound: ', num2str(sum(integrin_free+integrin_bound))]);
-            disp(['dA*sum(integrin_free_new+integrin_bound_new): ', num2str(dA*sum(integrin_free_new+integrin_bound_new))]);
-            disp(['Total Integrin Val: ', num2str(Tot_Integrin_Val)]);
-            % disp(['dA = ', num2str(dA), ' Npts_t = ', num2str(Npts_t), ' Total Integrin Val: ', num2str(Tot_Integrin_Val)]);
-            % disp(['dA*sum(integrin_free_new+integrin_bound_new) = ', num2str(dA*sum(integrin_free_new+integrin_bound_new))]);
-            % disp(['0.999*Tot_Integrin_Val = ', num2str(0.999*Tot_Integrin_Val)]);
-            % disp(['1.001*Tot_Integrin_Val = ', num2str(1.001*Tot_Integrin_Val)]);
-            % disp(['************']);
             if ~exist("area_scale_factor", "var")
                 if (dA*sum(integrin_free_new+integrin_bound_new)...
                         < 0.999*Tot_Integrin_Val)||(dA*sum(integrin_free_new+integrin_bound_new) > 1.001*Tot_Integrin_Val)
@@ -542,7 +461,6 @@ for my2=1:numel(nuc_rel_vec)
                 StSt=1;
             end
             
-            % TODO: change the cell geometry here to integrate new feature: Dynamically change the cell shape to imitate stretching
         end
 
         close(v);
@@ -610,37 +528,30 @@ function stretch_factor = get_stretch_factor(time, stretch_schedule)
     stretch_factor = 1.0;
 end
 
-% 動的な y_max を取得する関数
+% EN: Function to get dynamic y_max
 function y_max = get_y_max(time, stretch_schedule)
     initial_y_max = 60;
     final_y_max = 60;
     
-    % 最初の72時間（stretch_scheduleの第1区間）は y_max を変えない
     if time <= stretch_schedule(1, 2)
         y_max = initial_y_max;
     else
-        % 72時間から120時間にかけて y_max を60から20に線形に変化
         duration = stretch_schedule(2, 2) - stretch_schedule(2, 1);
         y_max = initial_y_max + (final_y_max - initial_y_max) * ((time - stretch_schedule(2, 1)) / duration);
-        y_max = max(final_y_max, min(initial_y_max, y_max));  % y_max の範囲を 20～60 に制限
+        y_max = max(final_y_max, min(initial_y_max, y_max));
     end
 end
 
 
 function stretch_schedule = generate_cyclic_stretch_schedule(total_time, cycle_period, strain_amplitude)
-    % total_time: 総シミュレーション時間 (秒)
-    % cycle_period: 1サイクルの時間 (秒)
-    % strain_amplitude: 最大伸び率 (0.1 = 10% の伸び)
-
-    num_cycles = floor(total_time / cycle_period); % サイクル数
-    stretch_schedule = zeros(num_cycles * 2, 4); % 初期化
+    num_cycles = floor(total_time / cycle_period);
+    stretch_schedule = zeros(num_cycles * 2, 4);
     
     for i = 1:num_cycles
         start_time = (i - 1) * cycle_period;
         end_time = start_time + cycle_period / 2;
         next_start_time = start_time + cycle_period;
 
-        % スケジュールの生成
         stretch_schedule(2 * i - 1, :) = [start_time, end_time, 1, 1 + strain_amplitude];
         stretch_schedule(2 * i, :) = [end_time, next_start_time, 1 + strain_amplitude, 1];
     end

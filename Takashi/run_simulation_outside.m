@@ -1,23 +1,23 @@
 % run_simulations_with_OOP_calculation.m
-% 複数の max_stretch_factor と fold_time でシミュレーションを実行し、
-% Orientation Order Parameter を計算します。
-% エラーが発生した場合、エラーログを保存し、次のシミュレーションを継続します。
+% Run simulations with multiple max_stretch_factor and fold_time,
+% and calculate the Orientation Order Parameter.
+% If an error occurs, save the error log and continue to the next simulation.
 
-% max_stretch_factors と fold_time の設定
-% max_stretch_factors = [3.5, 4.0, 5.0]; % 使用する max_stretch_factor のリスト
-% fold_times = [(72-1)*3600, (72-3)*3600, (72-6)*3600, (72-12)*3600, (72-24)*3600]; % 使用する fold_time のリスト
-% fold_times = [(72-1)*3600]; % 使用する fold_time のリスト
-max_stretch_factors = [1.0, 2.0, 3.0, 4.0, 5.0]; % 使用する max_stretch_factor のリスト
+% Setting max_stretch_factors and fold_time
+% max_stretch_factors = [3.5, 4.0, 5.0]; % List of max_stretch_factors to use
+% fold_times = [(72-1)*3600, (72-3)*3600, (72-6)*3600, (72-12)*3600, (72-24)*3600]; % List of fold_times to use
+% fold_times = [(72-1)*3600]; % List of fold_times to use
+max_stretch_factors = [1.0, 2.0, 3.0, 4.0, 5.0]; % List of max_stretch_factors to use
 nuc_rel_vec=[0, 1];
-n_trial = 5; % 各条件での試行回数
+n_trial = 5; % Number of trials for each condition
 
-% エラーログ用の保存ディレクトリ
+% Directory to save error logs
 error_log_dir = fullfile(pwd, 'error_logs');
 if ~exist(error_log_dir, 'dir')
     mkdir(error_log_dir);
 end
 
-% 各 max_stretch_factor でループを回してシミュレーションを実行
+% Loop through each max_stretch_factor and run simulations
 for i = 1:length(max_stretch_factors)
     max_stretch_factor = max_stretch_factors(i);
     for j = 1:length(nuc_rel_vec)
@@ -25,16 +25,16 @@ for i = 1:length(max_stretch_factors)
 
         for k = 1:n_trial
             try
-                % single_cell_units_linked_v3 を呼び出し、結果を保存
+                % Call single_cell_units_linked_v3 and save the results
                 disp(['Running simulation with max_stretch_factor = ', num2str(max_stretch_factor), ...
                     ' and nuc_rel = ', num2str(nuc_rel)]);
                 single_cell_units_linked_v3_NucPlacement(max_stretch_factor, [nuc_rel], k);
 
-                % Orientation Order Parameter を計算
+                % Calculate the Orientation Order Parameter
                 % calculate_orientation_order_parameter;
                 
             catch ME
-                % エラー情報を保存
+                % Save error information
                 errorTime = datestr(now, 'yyyy-mm-dd_HH-MM-SS');
                 errorMessage = ME.message;
                 errorDetails = struct('Time', errorTime, 'Message', errorMessage, 'Stack', ME.stack);
